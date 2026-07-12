@@ -27,6 +27,9 @@
 #include <thread>
 #include <unordered_set>
 
+// Steinberg headers must come after Qt but before obs-vst3 headers that use them.
+#include "pluginterfaces/vst/ivstaudioprocessor.h"
+
 #include "obs-vst3.h"
 #include "VST3HostApp.h"
 #include "VST3Scanner.h"

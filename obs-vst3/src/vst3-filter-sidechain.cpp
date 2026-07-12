@@ -16,6 +16,7 @@
 ******************************************************************************/
 
 #include "vst3-filter-sidechain.h"
+#include "vst3-filter.h"
 #include "vst3-filter-audio.h"
 #include "VST3Plugin.h"
 
