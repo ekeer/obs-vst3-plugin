@@ -18,7 +18,6 @@ concurrency:
 
 env:
   BUILD_TYPE: RelWithDebInfo
-  # Use pkviet's vst3 branch - it has VST3 cmake infrastructure built in
   OBS_REPO: https://github.com/pkviet/obs-studio.git
   OBS_BRANCH: vst3
 
@@ -36,24 +35,19 @@ jobs:
 
       - name: Clone OBS Studio (vst3 branch)
         run: |
-          git clone --recursive --depth 1 `
-            --branch ${{ env.OBS_BRANCH }} `
-            ${{ env.OBS_REPO }} obs-studio
+          git clone --recursive --branch ${{ env.OBS_BRANCH }} ${{ env.OBS_REPO }} obs-studio
 
       - name: Replace obs-vst3 with our version
         run: |
           Remove-Item -Recurse -Force "${{ github.workspace }}/obs-studio/plugins/obs-vst3" -ErrorAction SilentlyContinue
-          Copy-Item -Recurse `
-            "${{ github.workspace }}/obs-vst3-plugin-src/obs-vst3" `
-            "${{ github.workspace }}/obs-studio/plugins/obs-vst3"
+          Copy-Item -Recurse "${{ github.workspace }}/obs-vst3-plugin-src/obs-vst3" "${{ github.workspace }}/obs-studio/plugins/obs-vst3"
 
       - name: Configure CMake
         run: |
           cd "${{ github.workspace }}/obs-studio"
           cmake -S . -B build_x64 -G "Visual Studio 17 2022" -A x64 `
             -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
-            -DENABLE_VST3=ON -DENABLE_VST=OFF `
-            -DOBS_VERSION_OVERRIDE=32.1.2
+            -DENABLE_VST3=ON -DENABLE_VST=OFF
 
       - name: Build
         run: |
@@ -90,30 +84,26 @@ jobs:
             extra-cmake-modules libegl1-mesa-dev libgles2-mesa-dev \
             mesa-common-dev nlohmann-json3-dev libspeexdsp-dev \
             librist-dev libsrt-openssl-dev \
-            libsimde-dev uthash-dev
+            libsimde-dev uthash-dev \
+            libjansson-dev
 
       - name: Clone OBS Studio (vst3 branch)
         run: |
-          git clone --recursive --depth 1 \
-            --branch ${{ env.OBS_BRANCH }} \
-            ${{ env.OBS_REPO }} obs-studio
+          git clone --recursive --branch ${{ env.OBS_BRANCH }} ${{ env.OBS_REPO }} obs-studio
 
       - name: Get VST3 SDK
         run: |
-          git clone --recursive --depth 1 \
-            https://github.com/steinbergmedia/vst3sdk.git "${{ github.workspace }}/vst3sdk"
+          git clone --recursive --depth 1 https://github.com/steinbergmedia/vst3sdk.git "${{ github.workspace }}/vst3sdk"
 
       - name: Replace obs-vst3 with our version
         run: |
           rm -rf "${{ github.workspace }}/obs-studio/plugins/obs-vst3"
-          cp -r "${{ github.workspace }}/obs-vst3-plugin-src/obs-vst3" \
-            "${{ github.workspace }}/obs-studio/plugins/obs-vst3"
+          cp -r "${{ github.workspace }}/obs-vst3-plugin-src/obs-vst3" "${{ github.workspace }}/obs-studio/plugins/obs-vst3"
 
       - name: Configure CMake
         run: |
           cd "${{ github.workspace }}/obs-studio"
           cmake --preset ubuntu \
-            -DOBS_VERSION_OVERRIDE=32.1.2 \
             -DENABLE_VST3=ON -DENABLE_VST=OFF \
             -DENABLE_BROWSER=OFF -DENABLE_WEBRTC=OFF \
             -DENABLE_PIPEWIRE=ON -DENABLE_PULSEAUDIO=ON \
@@ -147,26 +137,21 @@ jobs:
 
       - name: Clone OBS Studio (vst3 branch)
         run: |
-          git clone --recursive --depth 1 \
-            --branch ${{ env.OBS_BRANCH }} \
-            ${{ env.OBS_REPO }} obs-studio
+          git clone --recursive --branch ${{ env.OBS_BRANCH }} ${{ env.OBS_REPO }} obs-studio
 
       - name: Get VST3 SDK
         run: |
-          git clone --recursive --depth 1 \
-            https://github.com/steinbergmedia/vst3sdk.git "${{ github.workspace }}/vst3sdk"
+          git clone --recursive --depth 1 https://github.com/steinbergmedia/vst3sdk.git "${{ github.workspace }}/vst3sdk"
 
       - name: Replace obs-vst3 with our version
         run: |
           rm -rf "${{ github.workspace }}/obs-studio/plugins/obs-vst3"
-          cp -r "${{ github.workspace }}/obs-vst3-plugin-src/obs-vst3" \
-            "${{ github.workspace }}/obs-studio/plugins/obs-vst3"
+          cp -r "${{ github.workspace }}/obs-vst3-plugin-src/obs-vst3" "${{ github.workspace }}/obs-studio/plugins/obs-vst3"
 
-      - name: Configure CMake (macos preset)
+      - name: Configure CMake
         run: |
           cd "${{ github.workspace }}/obs-studio"
           cmake --preset macos \
-            -DOBS_VERSION_OVERRIDE=32.1.2 \
             -DENABLE_VST3=ON -DENABLE_VST=OFF \
             -DENABLE_BROWSER=OFF -DENABLE_WEBRTC=OFF \
             -DVST3SDK_PATH="${{ github.workspace }}/vst3sdk"
