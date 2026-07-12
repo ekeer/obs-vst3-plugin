@@ -19,6 +19,8 @@
 #include "vst3-filter-audio.h"
 #include "VST3Plugin.h"
 
+#include <util/platform.h>
+
 #include <algorithm>
 
 void teardown_sidechain(vst3_audio_data *vd, obs_data *settings)

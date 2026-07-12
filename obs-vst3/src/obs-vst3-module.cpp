@@ -290,28 +290,28 @@ std::vector<uint8_t> fromHex(const std::string &hex)
     return data;
 }
 
-Steinberg::Vst::SpeakerArrangement
+uint64_t
 obs_to_vst3_speaker_arrangement(speaker_layout layout)
 {
     using namespace Steinberg::Vst;
     switch (layout) {
     case SPEAKERS_MONO:
-        return SpeakerArr::kMono;
+        return static_cast<uint64_t>(SpeakerArr::kMono);
     case SPEAKERS_STEREO:
-        return SpeakerArr::kStereo;
+        return static_cast<uint64_t>(SpeakerArr::kStereo);
     case SPEAKERS_2POINT1:
-        return SpeakerArr::k30Cine;
+        return static_cast<uint64_t>(SpeakerArr::k30Cine);
     case SPEAKERS_4POINT0:
-        return SpeakerArr::k40Cine;
+        return static_cast<uint64_t>(SpeakerArr::k40Cine);
     case SPEAKERS_4POINT1:
-        return SpeakerArr::k41Cine;
+        return static_cast<uint64_t>(SpeakerArr::k41Cine);
     case SPEAKERS_5POINT1:
-        return SpeakerArr::k51;
+        return static_cast<uint64_t>(SpeakerArr::k51);
     case SPEAKERS_7POINT1:
-        return SpeakerArr::k71Music;
+        return static_cast<uint64_t>(SpeakerArr::k71Music);
     case SPEAKERS_UNKNOWN:
     default:
-        return SpeakerArr::kEmpty;
+        return static_cast<uint64_t>(SpeakerArr::kEmpty);
     }
 }
 

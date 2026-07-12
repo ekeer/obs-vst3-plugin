@@ -179,7 +179,7 @@ bool create_VST3Plugin(vst3_audio_data *vd)
     const int sample_rate = vd->sample_rate;
     const int max_block = FRAME_SIZE;
 
-    Steinberg::Vst::SpeakerArrangement arr =
+    auto arr =
         obs_to_vst3_speaker_arrangement(vd->layout);
 
     VST3Plugin *raw = new VST3Plugin();
