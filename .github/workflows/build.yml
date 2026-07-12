@@ -86,7 +86,7 @@ jobs:
             extra-cmake-modules libegl1-mesa-dev libgles2-mesa-dev \
             mesa-common-dev nlohmann-json3-dev libspeexdsp-dev \
             librist-dev libsrt-openssl-dev \
-            libsimde-dev uthash-dev libjansson-dev
+            libsimde-dev uthash-dev libjansson-dev libluajit-5.1-dev
 
       - name: Clone OBS Studio (vst3 branch)
         run: |
