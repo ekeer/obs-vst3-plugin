@@ -23,8 +23,6 @@
 #include <string>
 #include <vector>
 
-#include "pluginterfaces/vst/ivstaudioprocessor.h"
-
 /* ---------- Module entry points (from plugin-main.cpp) ---------- */
 bool load_host();
 void unload_host();
@@ -52,5 +50,5 @@ void vst3_save(void *data, obs_data_t *settings);
 /* ---------- Utility functions ---------- */
 std::string toHex(const std::vector<uint8_t> &data);
 std::vector<uint8_t> fromHex(const std::string &hex);
-Steinberg::Vst::SpeakerArrangement obs_to_vst3_speaker_arrangement(speaker_layout layout);
+uint64_t obs_to_vst3_speaker_arrangement(speaker_layout layout);
 enum speaker_layout convert_speaker_layout(uint8_t channels);
