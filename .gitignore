@@ -1,0 +1,45 @@
+# Build directories
+build/
+cmake-build-*/
+out/
+
+# IDE files
+.vs/
+.idea/
+*.user
+*.sln
+*.suo
+cmake-build-debug/
+cmake-build-release/
+
+# Compiled files
+*.o
+*.obj
+*.dll
+*.dylib
+*.so
+*.exe
+*.pdb
+*.exp
+*.lib
+
+# macOS
+.DS_Store
+*.dSYM/
+
+# CMake generated
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+obs-vst3.rc
+
+# Python
+__pycache__/
+*.pyc
+
+# Logs
+*.log
+
+# VST3 config cache (user-specific)
+vst3list.json

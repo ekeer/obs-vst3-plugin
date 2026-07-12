@@ -1,0 +1,185 @@
+name: Build obs-vst3-plugin
+
+on:
+  push:
+    branches: [ main, master, develop ]
+    paths:
+      - 'obs-vst3/**'
+      - 'CMakeLists.txt'
+      - '.github/workflows/build.yml'
+  pull_request:
+    branches: [ main, master ]
+  release:
+    types: [ published ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BUILD_TYPE: RelWithDebInfo
+
+jobs:
+  build-windows:
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Install obs-deps (Windows)
+        shell: pwsh
+        run: |
+          # Download pre-built obs-deps with VST3 SDK
+          $depsUrl = "https://github.com/obsproject/obs-deps/releases/latest/download/windows-deps-x64.zip"
+          $depsZip = "$env:RUNNER_TEMP/windows-deps-x64.zip"
+          Invoke-WebRequest -Uri $depsUrl -OutFile $depsZip
+          Expand-Archive -Path $depsZip -DestinationPath "$env:RUNNER_TEMP/obs-deps" -Force
+          echo "OBS_DEPS_PATH=$env:RUNNER_TEMP/obs-deps" >> $env:GITHUB_ENV
+
+      - name: Setup VST3 SDK
+        shell: pwsh
+        run: |
+          # VST3 SDK is in obs-deps
+          $sdkPath = "$env:RUNNER_TEMP/obs-deps/include/vst3sdk"
+          if (Test-Path $sdkPath) {
+            echo "VST3SDK_PATH=$sdkPath" >> $env:GITHUB_ENV
+          } else {
+            # Fallback: clone VST3 SDK
+            git clone --recursive --depth 1 https://github.com/steinbergmedia/vst3sdk.git "$env:RUNNER_TEMP/vst3sdk"
+            echo "VST3SDK_PATH=$env:RUNNER_TEMP/vst3sdk" >> $env:GITHUB_ENV
+          }
+
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build `
+            -G "Visual Studio 17 2022" -A x64 `
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
+            -DVST3SDK_PATH="$env:VST3SDK_PATH" `
+            -DOBS_DEPS_PATH="$env:OBS_DEPS_PATH"
+
+      - name: Build
+        run: cmake --build build --config ${{ env.BUILD_TYPE }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: obs-vst3-plugin-windows-x64
+          path: |
+            build/obs-vst3/${{ env.BUILD_TYPE }}/obs-vst3.dll
+            build/obs-vst3/${{ env.BUILD_TYPE }}/obs-vst3.pdb
+          if-no-files-found: warn
+
+  build-macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Install Dependencies
+        run: |
+          brew install cmake qt
+          # obs-deps for macOS
+          curl -L -o macos-deps.zip \
+            "https://github.com/obsproject/obs-deps/releases/latest/download/macos-deps-universal.zip"
+          unzip -q macos-deps.zip -d "$RUNNER_TEMP/obs-deps"
+
+      - name: Setup VST3 SDK
+        run: |
+          if [ -d "$RUNNER_TEMP/obs-deps/include/vst3sdk" ]; then
+            echo "VST3SDK_PATH=$RUNNER_TEMP/obs-deps/include/vst3sdk" >> $GITHUB_ENV
+          else
+            git clone --recursive --depth 1 \
+              https://github.com/steinbergmedia/vst3sdk.git "$RUNNER_TEMP/vst3sdk"
+            echo "VST3SDK_PATH=$RUNNER_TEMP/vst3sdk" >> $GITHUB_ENV
+          fi
+
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DVST3SDK_PATH="$VST3SDK_PATH" \
+            -DOBS_DEPS_PATH="$RUNNER_TEMP/obs-deps"
+
+      - name: Build
+        run: cmake --build build --config ${{ env.BUILD_TYPE }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: obs-vst3-plugin-macos-universal
+          path: |
+            build/obs-vst3/*.dylib
+            build/obs-vst3/*.so
+          if-no-files-found: warn
+
+  build-linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake build-essential qt6-base-dev libgl1-mesa-dev \
+            libx11-dev libxcb-util-dev libxcb-shm0-dev \
+            libxcb-xfixes0-dev libxcb-randr0-dev
+
+      - name: Setup VST3 SDK
+        run: |
+          git clone --recursive --depth 1 \
+            https://github.com/steinbergmedia/vst3sdk.git "$RUNNER_TEMP/vst3sdk"
+          echo "VST3SDK_PATH=$RUNNER_TEMP/vst3sdk" >> $GITHUB_ENV
+
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DVST3SDK_PATH="$VST3SDK_PATH"
+
+      - name: Build
+        run: cmake --build build --config ${{ env.BUILD_TYPE }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: obs-vst3-plugin-linux-x64
+          path: |
+            build/obs-vst3/*.so
+          if-no-files-found: warn
+
+  create-release:
+    needs: [build-windows, build-macos, build-linux]
+    if: github.event_name == 'release' && github.event.action == 'published'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release Package
+        run: |
+          mkdir -p release
+          cd artifacts
+          for dir in */; do
+            zip -r "../release/${dir%/}.zip" "$dir"
+          done
+
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
