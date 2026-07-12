@@ -15,18 +15,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
-#include "obs-vst3.h"
-
-#include "VST3HostApp.h"
-#include "VST3Scanner.h"
-#include "vst3-filter.h"
-
-// on linux Qt must be included before X11 headers due to a pesky redefinition
+// Qt must be included before Steinberg SDK headers (which define Status macro).
 #include <QCoreApplication>
-
-#ifdef __linux__
-#include "editor/linux/RunLoopImpl.h"
-#endif
 
 #include <util/platform.h>
 
@@ -36,6 +26,15 @@
 #include <sstream>
 #include <thread>
 #include <unordered_set>
+
+#include "obs-vst3.h"
+#include "VST3HostApp.h"
+#include "VST3Scanner.h"
+#include "vst3-filter.h"
+
+#ifdef __linux__
+#include "editor/linux/RunLoopImpl.h"
+#endif
 
 /* ----------------- global host & runloop ---------------- */
 // As in DAWS there is a single global host. The linux runloop is also global in the SDK.
