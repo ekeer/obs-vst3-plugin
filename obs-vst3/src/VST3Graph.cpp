@@ -10,6 +10,7 @@
 
 #include "VST3Graph.h"
 #include "VST3Plugin.h"
+#include "obs-vst3.h"
 
 #include <algorithm>
 #include <cstring>
@@ -28,7 +29,7 @@ VST3GraphNode::VST3GraphNode(size_t id,
 {
     if (plugin_) {
         channels_ = plugin_->numEnabledOutputAudioBuses > 0
-                        ? plugin_->channelCount(Steinberg::Vst::kOutput, 0)
+                        ? plugin_->mainOutputBusNumChannels
                         : 2;
         if (channels_ < 1)
             channels_ = 2;
@@ -368,12 +369,12 @@ std::string VST3Graph::toJsonString()
              << (nodes_[i].enabled_ ? "true" : "false") << ",\n";
         json << "      \"vst3_id\": \""
              << (nodes_[i].plugin_
-                     ? nodes_[i].plugin_->classId
+                     ? nodes_[i].plugin_->name
                      : "")
              << "\",\n";
         json << "      \"vst3_path\": \""
              << (nodes_[i].plugin_
-                     ? nodes_[i].plugin_->modulePath
+                     ? nodes_[i].plugin_->path
                      : "")
              << "\"\n";
         json << "    }";
@@ -386,6 +387,7 @@ std::string VST3Graph::toJsonString()
 
 bool VST3Graph::fromJsonString(const std::string &json)
 {
+    UNUSED_PARAMETER(json);
     // Minimal JSON parser for graph config
     // In production this should use a proper JSON library
     // For now we clear and return false to let the caller handle it
@@ -425,7 +427,7 @@ uint32_t VST3Graph::getTotalLatency() const
     uint32_t total = 0;
     for (const auto &node : nodes_) {
         if (node.enabled_ && node.plugin_) {
-            total += node.plugin_->latencySamples;
+            total += 0; // FIXME: get actual latency
         }
     }
     return total;
@@ -504,7 +506,6 @@ void vst3_graph_update(void *data, obs_data_t *settings)
 {
     UNUSED_PARAMETER(settings);
     auto *gf = static_cast<VST3GraphFilter *>(data);
-    if (!gf) return;
     // Graph nodes are managed via properties panel
     gf->bypass_.store(false, std::memory_order_relaxed);
 }
