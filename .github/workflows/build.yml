@@ -115,14 +115,14 @@ jobs:
       - name: Build (our plugin only)
         run: |
           cd "${{ github.workspace }}/obs-studio"
-          cmake --build build --target obs-vst3
+          cmake --build build_ubuntu --target obs-vst3
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: obs-vst3-plugin-linux-x64
           path: |
-            ${{ github.workspace }}/obs-studio/build/plugins/obs-vst3/*.so
+            ${{ github.workspace }}/obs-studio/build_ubuntu/plugins/obs-vst3/*.so
           if-no-files-found: warn
 
   # macOS - compile check only (vst3 branch requires future macOS SDK)
