@@ -15,6 +15,9 @@ set(CMAKE_AUTOMOC ON)
 add_library(obs-vst3 MODULE)
 add_library(OBS::vst3 ALIAS obs-vst3)
 
+# Add our cmake finder modules
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
 # --- Find VST3 SDK (via obs-deps or manual path) ---
 find_package(VST3SDK QUIET)
 
