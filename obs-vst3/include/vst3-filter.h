@@ -19,6 +19,12 @@
 
 #include "obs-vst3.h"
 
+#include <cstdint>
+#include <string>
+#include <vector>
+
+#include "pluginterfaces/vst/ivstaudioprocessor.h"
+
 /* ---------- Module entry points (from plugin-main.cpp) ---------- */
 bool load_host();
 void unload_host();
