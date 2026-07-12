@@ -18,7 +18,9 @@ concurrency:
 
 env:
   BUILD_TYPE: RelWithDebInfo
-  OBS_VERSION: 32.1.2
+  # Use pkviet's vst3 branch - it has VST3 cmake infrastructure built in
+  OBS_REPO: https://github.com/pkviet/obs-studio.git
+  OBS_BRANCH: vst3
 
 jobs:
   build-windows:
@@ -30,38 +32,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          path: obs-vst3-plugin
+          path: obs-vst3-plugin-src
 
-      - name: Clone OBS Studio
-        shell: pwsh
+      - name: Clone OBS Studio (vst3 branch)
         run: |
           git clone --recursive --depth 1 `
-            -b ${{ env.OBS_VERSION }} `
-            https://github.com/obsproject/obs-studio.git obs-studio
+            --branch ${{ env.OBS_BRANCH }} `
+            ${{ env.OBS_REPO }} obs-studio
 
-      - name: Copy plugin into OBS tree
-        shell: pwsh
+      - name: Replace obs-vst3 with our version
         run: |
+          Remove-Item -Recurse -Force "${{ github.workspace }}/obs-studio/plugins/obs-vst3" -ErrorAction SilentlyContinue
           Copy-Item -Recurse `
-            "${{ github.workspace }}/obs-vst3-plugin/obs-vst3" `
+            "${{ github.workspace }}/obs-vst3-plugin-src/obs-vst3" `
             "${{ github.workspace }}/obs-studio/plugins/obs-vst3"
-          # Remove our root CMakeLists.txt so OBS's own is used
-          Remove-Item "${{ github.workspace }}/obs-studio/plugins/obs-vst3/CMakeLists.txt"
-          # Copy the cmake config
-          Copy-Item "${{ github.workspace }}/obs-vst3-plugin/obs-vst3/CMakeLists.txt" `
-            "${{ github.workspace }}/obs-studio/plugins/obs-vst3/CMakeLists.txt"
 
-      - name: Install obs-deps via cmake preset
-        shell: pwsh
+      - name: Configure CMake
         run: |
           cd "${{ github.workspace }}/obs-studio"
-          cmake --preset windows-x64 -DENABLE_VST3=ON -DENABLE_VST=OFF
+          cmake -S . -B build_x64 -G "Visual Studio 17 2022" -A x64 `
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
+            -DENABLE_VST3=ON -DENABLE_VST=OFF
 
       - name: Build
-        shell: pwsh
         run: |
           cd "${{ github.workspace }}/obs-studio"
-          cmake --build build_x64 --config ${{ env.BUILD_TYPE }} --target obs-vst3
+          cmake --build build_x64 --config ${{ env.BUILD_TYPE }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -78,43 +74,44 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          path: obs-vst3-plugin
+          path: obs-vst3-plugin-src
 
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake ninja-build \
-            qt6-base-dev qt6-base-dev-tools libgl1-mesa-dev \
-            libx11-dev libxcb-util-dev libxcb-shm0-dev \
-            libxcb-xfixes0-dev libxcb-randr0-dev libxcb-xinerama0-dev \
-            libxcb-xinput-dev libxcb-composite0-dev libxkbcommon-dev \
-            libpulse-dev libpipewire-0.3-dev libjack-dev \
-            libwayland-dev wayland-protocols \
-            libasound2-dev libv4l-dev libcurl4-openssl-dev \
-            libavcodec-dev libavformat-dev libavutil-dev \
-            libswscale-dev libswresample-dev
+          sudo apt-get install -y build-essential cmake ninja-build pkg-config \
+            qt6-base-dev qt6-base-dev-tools qt6-wayland libgl1-mesa-dev \
+            libx11-dev libxcb-* libxkbcommon-dev libpulse-dev \
+            libpipewire-0.3-dev libjack-jackd2-dev libwayland-dev \
+            wayland-protocols libasound2-dev libv4l-dev libcurl4-openssl-dev \
+            libavcodec-dev libavformat-dev libavutil-dev libswscale-dev \
+            libswresample-dev \
+            extra-cmake-modules libegl1-mesa-dev libgles2-mesa-dev \
+            mesa-common-dev nlohmann-json3-dev libspeexdsp-dev \
+            librist-dev libsrt-openssl-dev \
+            libsimde-dev uthash-dev
 
-      - name: Clone OBS Studio
+      - name: Clone OBS Studio (vst3 branch)
         run: |
           git clone --recursive --depth 1 \
-            -b ${{ env.OBS_VERSION }} \
-            https://github.com/obsproject/obs-studio.git obs-studio
+            --branch ${{ env.OBS_BRANCH }} \
+            ${{ env.OBS_REPO }} obs-studio
 
       - name: Get VST3 SDK
         run: |
           git clone --recursive --depth 1 \
             https://github.com/steinbergmedia/vst3sdk.git "${{ github.workspace }}/vst3sdk"
 
-      - name: Copy plugin into OBS tree
+      - name: Replace obs-vst3 with our version
         run: |
-          cp -r "${{ github.workspace }}/obs-vst3-plugin/obs-vst3" \
+          rm -rf "${{ github.workspace }}/obs-studio/plugins/obs-vst3"
+          cp -r "${{ github.workspace }}/obs-vst3-plugin-src/obs-vst3" \
             "${{ github.workspace }}/obs-studio/plugins/obs-vst3"
 
       - name: Configure CMake
         run: |
           cd "${{ github.workspace }}/obs-studio"
-          cmake -S . -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+          cmake --preset ubuntu \
             -DENABLE_VST3=ON -DENABLE_VST=OFF \
             -DENABLE_BROWSER=OFF -DENABLE_WEBRTC=OFF \
             -DENABLE_PIPEWIRE=ON -DENABLE_PULSEAUDIO=ON \
@@ -135,38 +132,38 @@ jobs:
           if-no-files-found: warn
 
   build-macos:
-    runs-on: macos-14
+    runs-on: macos-15
 
     steps:
       - uses: actions/checkout@v4
         with:
-          path: obs-vst3-plugin
+          path: obs-vst3-plugin-src
 
       - name: Install Dependencies
         run: |
-          brew install cmake ninja qt
+          brew install cmake qt
 
-      - name: Clone OBS Studio
+      - name: Clone OBS Studio (vst3 branch)
         run: |
           git clone --recursive --depth 1 \
-            -b ${{ env.OBS_VERSION }} \
-            https://github.com/obsproject/obs-studio.git obs-studio
+            --branch ${{ env.OBS_BRANCH }} \
+            ${{ env.OBS_REPO }} obs-studio
 
       - name: Get VST3 SDK
         run: |
           git clone --recursive --depth 1 \
             https://github.com/steinbergmedia/vst3sdk.git "${{ github.workspace }}/vst3sdk"
 
-      - name: Copy plugin into OBS tree
+      - name: Replace obs-vst3 with our version
         run: |
-          cp -r "${{ github.workspace }}/obs-vst3-plugin/obs-vst3" \
+          rm -rf "${{ github.workspace }}/obs-studio/plugins/obs-vst3"
+          cp -r "${{ github.workspace }}/obs-vst3-plugin-src/obs-vst3" \
             "${{ github.workspace }}/obs-studio/plugins/obs-vst3"
 
-      - name: Configure CMake
+      - name: Configure CMake (macos preset)
         run: |
           cd "${{ github.workspace }}/obs-studio"
-          cmake -S . -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+          cmake --preset macos \
             -DENABLE_VST3=ON -DENABLE_VST=OFF \
             -DENABLE_BROWSER=OFF -DENABLE_WEBRTC=OFF \
             -DVST3SDK_PATH="${{ github.workspace }}/vst3sdk"
@@ -174,14 +171,15 @@ jobs:
       - name: Build
         run: |
           cd "${{ github.workspace }}/obs-studio"
-          cmake --build build --target obs-vst3
+          cmake --build build --target obs-vst3 --config ${{ env.BUILD_TYPE }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: obs-vst3-plugin-macos-universal
           path: |
-            ${{ github.workspace }}/obs-studio/build/plugins/obs-vst3/*.dylib
+            ${{ github.workspace }}/obs-studio/build/plugins/obs-vst3/${{ env.BUILD_TYPE }}/*.dylib
+            ${{ github.workspace }}/obs-studio/build/plugins/obs-vst3/${{ env.BUILD_TYPE }}/*.so
           if-no-files-found: warn
 
   create-release:
