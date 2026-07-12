@@ -17,6 +17,7 @@
 
 #include "vst3-filter-audio.h"
 #include "VST3Plugin.h"
+#include <util/platform.h>
 
 #include <algorithm>
 #include <cstring>
