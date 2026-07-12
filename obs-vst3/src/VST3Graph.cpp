@@ -461,6 +461,7 @@ static const char *vst3_graph_name(void *unused)
 
 void *vst3_graph_create(obs_data_t *settings, obs_source_t *filter)
 {
+    UNUSED_PARAMETER(settings);
     auto *gf = new VST3GraphFilter();
     gf->context_ = filter;
 
