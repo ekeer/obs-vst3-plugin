@@ -18,11 +18,11 @@ concurrency:
 
 env:
   BUILD_TYPE: RelWithDebInfo
-  OBS_REPO: https://github.com/pkviet/obs-studio.git
-  OBS_BRANCH: vst3
+  OBS_REPO: https://github.com/obsproject/obs-studio.git
+  OBS_BRANCH: 32.0.1
 
 jobs:
-  # Windows - fully builds the plugin (verified working)
+  # Windows - build plugin against OBS 32.0.1 release
   build-windows:
     runs-on: windows-2022
     defaults:
@@ -34,21 +34,27 @@ jobs:
         with:
           path: obs-vst3-plugin-src
 
-      - name: Clone OBS Studio (vst3 branch)
+      - name: Clone OBS Studio 32.0.1
         run: |
           git clone --recursive --branch ${{ env.OBS_BRANCH }} ${{ env.OBS_REPO }} obs-studio
 
-      - name: Replace obs-vst3 with our version
+      - name: Copy plugin & inject into OBS build
         run: |
           Remove-Item -Recurse -Force "${{ github.workspace }}/obs-studio/plugins/obs-vst3" -ErrorAction SilentlyContinue
           Copy-Item -Recurse "${{ github.workspace }}/obs-vst3-plugin-src/obs-vst3" "${{ github.workspace }}/obs-studio/plugins/obs-vst3"
+          # Inject plugin into OBS cmake
+          Add-Content -Path "${{ github.workspace }}/obs-studio/CMakeLists.txt" -Value "`nadd_subdirectory(plugins/obs-vst3)" -Encoding ASCII
+
+      - name: Get VST3 SDK
+        run: |
+          git clone --recursive --depth 1 https://github.com/steinbergmedia/vst3sdk.git "${{ github.workspace }}/vst3sdk"
 
       - name: Configure CMake
         run: |
           cd "${{ github.workspace }}/obs-studio"
           cmake -S . -B build_x64 -G "Visual Studio 17 2022" -A x64 `
             -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
-            -DENABLE_VST3=ON -DENABLE_VST=OFF
+            -DVST3SDK_PATH="${{ github.workspace }}/vst3sdk"
 
       - name: Build
         run: |
