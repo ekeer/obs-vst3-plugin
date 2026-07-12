@@ -52,7 +52,8 @@ jobs:
           cd "${{ github.workspace }}/obs-studio"
           cmake -S . -B build_x64 -G "Visual Studio 17 2022" -A x64 `
             -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
-            -DENABLE_VST3=ON -DENABLE_VST=OFF
+            -DENABLE_VST3=ON -DENABLE_VST=OFF `
+            -DOBS_VERSION_OVERRIDE=32.1.2
 
       - name: Build
         run: |
@@ -112,6 +113,7 @@ jobs:
         run: |
           cd "${{ github.workspace }}/obs-studio"
           cmake --preset ubuntu \
+            -DOBS_VERSION_OVERRIDE=32.1.2 \
             -DENABLE_VST3=ON -DENABLE_VST=OFF \
             -DENABLE_BROWSER=OFF -DENABLE_WEBRTC=OFF \
             -DENABLE_PIPEWIRE=ON -DENABLE_PULSEAUDIO=ON \
@@ -164,6 +166,7 @@ jobs:
         run: |
           cd "${{ github.workspace }}/obs-studio"
           cmake --preset macos \
+            -DOBS_VERSION_OVERRIDE=32.1.2 \
             -DENABLE_VST3=ON -DENABLE_VST=OFF \
             -DENABLE_BROWSER=OFF -DENABLE_WEBRTC=OFF \
             -DVST3SDK_PATH="${{ github.workspace }}/vst3sdk"
