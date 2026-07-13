@@ -45,9 +45,9 @@ jobs:
           # Inject plugin into OBS cmake
           Add-Content -Path "${{ github.workspace }}/obs-studio/CMakeLists.txt" -Value "`nadd_subdirectory(plugins/obs-vst3)" -Encoding ASCII
 
-      - name: Get VST3 SDK
+      - name: Get VST3 SDK (Windows)
         run: |
-          git clone --recursive --depth 1 https://github.com/steinbergmedia/vst3sdk.git "${{ github.workspace }}/vst3sdk"
+          git clone --recursive https://github.com/steinbergmedia/vst3sdk.git "${{ github.workspace }}/vst3sdk"
 
       - name: Configure CMake
         run: |
@@ -99,9 +99,9 @@ jobs:
         run: |
           git clone --recursive --branch ${{ env.OBS_BRANCH }} ${{ env.OBS_REPO }} obs-studio
 
-      - name: Get VST3 SDK
+      - name: Get VST3 SDK (Linux)
         run: |
-          git clone --recursive --depth 1 https://github.com/steinbergmedia/vst3sdk.git "${{ github.workspace }}/vst3sdk"
+          git clone --recursive https://github.com/steinbergmedia/vst3sdk.git "${{ github.workspace }}/vst3sdk"
 
       - name: Replace obs-vst3 with our version
         run: |
@@ -149,9 +149,9 @@ jobs:
           brew install --cask obs-studio || true
           brew tap homebrew/cask-versions || true
 
-      - name: Get VST3 SDK headers
+      - name: Get VST3 SDK headers (macOS)
         run: |
-          git clone --depth 1 https://github.com/steinbergmedia/vst3sdk.git "${{ github.workspace }}/vst3sdk"
+          git clone --recursive https://github.com/steinbergmedia/vst3sdk.git "${{ github.workspace }}/vst3sdk"
 
       - name: Compile check - verify our source files compile
         run: |
