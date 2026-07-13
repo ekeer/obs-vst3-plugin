@@ -183,7 +183,6 @@ target_link_libraries(
 if(OS_WINDOWS)
   configure_file(cmake/windows/obs-module.rc.in obs-vst3.rc)
   target_sources(obs-vst3 PRIVATE obs-vst3.rc)
-  target_link_options(obs-vst3 PRIVATE /DEF:${CMAKE_CURRENT_SOURCE_DIR}/cmake/windows/obs-vst3.def)
   configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake/windows/obs-studio.ico
     ${CMAKE_CURRENT_BINARY_DIR}/obs-studio.ico
@@ -192,3 +191,4 @@ if(OS_WINDOWS)
 endif()
 
 set_target_properties_obs(obs-vst3 PROPERTIES FOLDER plugins PREFIX "")
+set_property(TARGET obs-vst3 APPEND PROPERTY LINK_FLAGS "/EXPORT:obs_module_load /EXPORT:obs_module_set_pointer /EXPORT:obs_module_ver")
