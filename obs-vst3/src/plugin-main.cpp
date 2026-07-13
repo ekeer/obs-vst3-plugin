@@ -14,6 +14,13 @@
 
 #include <obs-module.h>
 
+// Force export OBS module entry points (MSVC)
+#ifdef _MSC_VER
+#pragma comment(linker, "/EXPORT:obs_module_load")
+#pragma comment(linker, "/EXPORT:obs_module_set_pointer")
+#pragma comment(linker, "/EXPORT:obs_module_ver")
+#endif
+
 OBS_DECLARE_MODULE()
 OBS_MODULE_USE_DEFAULT_LOCALE("obs-vst3", "en-US")
 
