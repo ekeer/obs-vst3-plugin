@@ -24,7 +24,7 @@
 OBS_DECLARE_MODULE()
 OBS_MODULE_USE_DEFAULT_LOCALE("obs-vst3", "en-US")
 
-bool obs_module_load(void)
+MODULE_EXPORT bool obs_module_load(void)
 {
     if (!load_host()) {
         blog(LOG_WARNING, "[obs-vst3] Failed to load VST3 host");
@@ -43,7 +43,7 @@ bool obs_module_load(void)
     return true;
 }
 
-void obs_module_unload(void)
+MODULE_EXPORT void obs_module_unload(void)
 {
     free_vst3_list();
     unload_host();
