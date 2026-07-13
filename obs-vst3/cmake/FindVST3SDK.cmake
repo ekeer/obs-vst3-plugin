@@ -61,7 +61,6 @@ if(_VST3SDK_PATH_CANDIDATE AND
     "public.sdk/source/vst/hosting/eventlist.cpp"
     "public.sdk/source/vst/hosting/parameterchanges.cpp"
     "public.sdk/source/vst/hosting/pluginterfacesupport.cpp"
-    "public.sdk/source/vst/hosting/connectionpoint.cpp"
     "public.sdk/source/vst/hosting/hostclasses.cpp"
     "public.sdk/source/vst/utility/stringconvert.cpp"
     "public.sdk/source/vst/utility/uidutility.cpp"
