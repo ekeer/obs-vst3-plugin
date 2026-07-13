@@ -32,6 +32,8 @@
 
 #include <util/platform.h>
 
+#include <algorithm>
+
 using namespace Steinberg;
 using namespace Steinberg::Vst;
 
@@ -44,7 +46,7 @@ const FUID Linux::IRunLoop::iid(0x18C35366, 0x97764F1A, 0x9C5B8385, 0x7A871389);
 #endif
 } // namespace Steinberg
 
-extern VST3HostApp *g_host_app;
+extern VST3HostApp *g_host_app_;
 #ifdef __linux__
 extern RunLoopImpl *g_run_loop;
 extern Display *g_display;
@@ -59,7 +61,7 @@ static void ensure_lsp_cairo_backend()
 VST3Plugin::VST3Plugin()
 {
 	if (!hostContext) {
-		hostContext = g_host_app;
+		hostContext = g_host_app_;
 	}
 
 	componentContext = new VST3ComponentHolder(this);
