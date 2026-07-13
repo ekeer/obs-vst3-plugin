@@ -182,7 +182,7 @@ target_link_libraries(
 # --- Windows resources ---
 if(OS_WINDOWS)
   configure_file(cmake/windows/obs-module.rc.in obs-vst3.rc)
-  target_sources(obs-vst3 PRIVATE obs-vst3.rc)
+  target_sources(obs-vst3 PRIVATE obs-vst3.rc cmake/windows/obs-vst3.def)
   configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake/windows/obs-studio.ico
     ${CMAKE_CURRENT_BINARY_DIR}/obs-studio.ico
