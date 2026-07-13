@@ -20,7 +20,7 @@ std::vector<std::string> VST3Scanner::getDefaultSearchPaths()
     std::vector<std::string> paths;
 
     // Standard VST3 locations on Windows
-    const char *env = nullptr;
+    char *env = nullptr;
     size_t len = 0;
 
     // Per-user installs
