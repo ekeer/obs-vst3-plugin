@@ -217,8 +217,13 @@ bool VST3Plugin::init(const std::string &classId, const std::string &path_, int 
 	processSetup.sampleRate = sampleRate;
 	processSetup.maxSamplesPerBlock = maxBlockSize;
 
-	processContext.state = ProcessContext::kPlaying | ProcessContext::kRecording | ProcessContext::kSystemTimeValid;
+	processContext.state = ProcessContext::kPlaying | ProcessContext::kRecording |
+			      ProcessContext::kSystemTimeValid |
+			      ProcessContext::kProjectTimeMusicValid | ProcessContext::kTempoValid;
 	processContext.sampleRate = sampleRate;
+	processContext.tempo = 120.0;
+	processContext.timeSigNumerator = 4;
+	processContext.timeSigDenominator = 4;
 
 	processData.numSamples = 0;
 	processData.symbolicSampleSize = symbolicSampleSize;
@@ -379,7 +384,14 @@ void VST3Plugin::preprocess()
 	processData.inputParameterChanges = inputParameterChanges.get();
 	processData.outputParameterChanges = outputParameterChanges.get();
 	guiToDsp.transferChangesTo(*inputParameterChanges);
+
+	// Clear silence flags so the plugin knows real audio is flowing
+	for (int32 i = 0; i < processData.numInputs; i++)
+		processData.inputs[i].silenceFlags = 0;
+	for (int32 i = 0; i < processData.numOutputs; i++)
+		processData.outputs[i].silenceFlags = 0;
 }
+
 
 void VST3Plugin::postprocess()
 {
@@ -429,6 +441,10 @@ bool VST3Plugin::process(int numSamples)
 
 	processData.numSamples = numSamples;
 	processContext.projectTimeSamples += numSamples;
+	processContext.projectTimeMusic =
+		(double)processContext.projectTimeSamples /
+		(processContext.sampleRate * processContext.tempo / 60.0) *
+		(processContext.timeSigDenominator / (4.0 * processContext.timeSigNumerator));
 	processContext.systemTime = static_cast<int64>(os_gettime_ns());
 
 	tresult result = audioEffect->process(processData);
