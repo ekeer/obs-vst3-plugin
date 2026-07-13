@@ -24,7 +24,7 @@ std::vector<std::string> VST3Scanner::getDefaultSearchPaths()
     size_t len = 0;
 
     // Per-user installs
-    if (dupenv_s(&env, &len, "APPDATA") == 0 && env) {
+    if (_dupenv_s(&env, &len, "APPDATA") == 0 && env) {
         std::string path = env;
         path += "\\VST3";
         paths.push_back(path);

@@ -21,12 +21,6 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 # --- Find VST3 SDK (via obs-deps or manual path) ---
 find_package(VST3SDK REQUIRED)
 
-if(NOT VST3SDK_FOUND)
-  message(STATUS "VST3 SDK not found — disabling obs-vst3 plugin.")
-  target_disable(obs-vst3)
-  return()
-endif()
-
 message(STATUS "VST3 SDK found at: ${VST3SDK_PATH}")
 
 # --- SDK compile warnings ---
