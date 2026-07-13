@@ -18,8 +18,8 @@ concurrency:
 
 env:
   BUILD_TYPE: RelWithDebInfo
-  OBS_REPO: https://github.com/obsproject/obs-studio.git
-  OBS_BRANCH: 32.0.1
+  OBS_REPO: https://github.com/pkviet/obs-studio.git
+  OBS_BRANCH: vst3
 
 jobs:
   # Windows - build plugin against OBS 32.0.1 release
