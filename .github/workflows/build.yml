@@ -18,8 +18,8 @@ concurrency:
 
 env:
   BUILD_TYPE: RelWithDebInfo
-  OBS_REPO: https://github.com/pkviet/obs-studio.git
-  OBS_BRANCH: vst3
+  OBS_REPO: https://github.com/obsproject/obs-studio.git
+  OBS_BRANCH: 32.0.1
 
 jobs:
   # Windows - build plugin against OBS 32.0.1 release
@@ -44,6 +44,10 @@ jobs:
           Copy-Item -Recurse "${{ github.workspace }}/obs-vst3-plugin-src/obs-vst3" "${{ github.workspace }}/obs-studio/plugins/obs-vst3"
           # Inject plugin into OBS cmake
           Add-Content -Path "${{ github.workspace }}/obs-studio/CMakeLists.txt" -Value "`nadd_subdirectory(plugins/obs-vst3)" -Encoding ASCII
+
+      - name: Get VST3 SDK (full clone with submodules)
+        run: |
+          git clone --recursive https://github.com/steinbergmedia/vst3sdk.git "${{ github.workspace }}/vst3sdk"
 
       - name: Get VST3 SDK (Windows)
         run: |
