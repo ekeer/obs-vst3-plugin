@@ -43,6 +43,15 @@ inline std::wstring utf8_to_wide(const std::string &str)
 	return out;
 }
 
+static bool safe_attach_view(Steinberg::IPlugView *view, HWND hwnd)
+{
+	__try {
+		return view->attached((void *)hwnd, Steinberg::kPlatformTypeHWND) == Steinberg::kResultOk;
+	} __except (EXCEPTION_EXECUTE_HANDLER) {
+		return false;
+	}
+}
+
 HMODULE GetCurrentModule()
 {
 	HMODULE hModule = nullptr;
@@ -127,14 +136,7 @@ public:
 		// Attach plugin view
 		if (view_) {
 			view_->setFrame(frame_);
-			bool attached = false;
-			__try {
-				attached = (view_->attached((void *)hwnd_, Steinberg::kPlatformTypeHWND) == Steinberg::kResultOk);
-			} __except (EXCEPTION_EXECUTE_HANDLER) {
-				fail("VST3: Plugin crashed during window attachment!");
-				return false;
-			}
-			if (!attached) {
+			if (!safe_attach_view(view_, hwnd_)) {
 				view_->setFrame(nullptr);
 				fail("VST3: Plugin attachment to window failed!");
 				return false;
