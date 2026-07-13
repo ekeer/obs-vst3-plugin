@@ -119,10 +119,10 @@ jobs:
             -DENABLE_JACK=ON \
             -DVST3SDK_PATH="${{ github.workspace }}/vst3sdk"
 
-      - name: Build (our plugin only)
+      - name: Build
         run: |
           cd "${{ github.workspace }}/obs-studio"
-          cmake --build build_ubuntu --target obs-vst3
+          cmake --build build_ubuntu
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
