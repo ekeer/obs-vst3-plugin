@@ -127,7 +127,14 @@ public:
 		// Attach plugin view
 		if (view_) {
 			view_->setFrame(frame_);
-			if (view_->attached((void *)hwnd_, Steinberg::kPlatformTypeHWND) != Steinberg::kResultOk) {
+			bool attached = false;
+			__try {
+				attached = (view_->attached((void *)hwnd_, Steinberg::kPlatformTypeHWND) == Steinberg::kResultOk);
+			} __except (EXCEPTION_EXECUTE_HANDLER) {
+				fail("VST3: Plugin crashed during window attachment!");
+				return false;
+			}
+			if (!attached) {
 				view_->setFrame(nullptr);
 				fail("VST3: Plugin attachment to window failed!");
 				return false;
