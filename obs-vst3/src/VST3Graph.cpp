@@ -522,6 +522,15 @@ struct obs_audio_data *vst3_graph_filter_audio(
     auto &graph = gf->graph_;
     size_t segment_size = gf->frame_size_ * sizeof(float);
 
+    // Safety: reset deques if accumulated beyond 32 segments
+    if (gf->input_buffers_[0].size > 32 * segment_size) {
+        for (size_t i = 0; i < gf->channels_; i++) {
+            deque_pop_front(&gf->input_buffers_[i], nullptr, gf->input_buffers_[i].size);
+            deque_pop_front(&gf->output_buffers_[i], nullptr, gf->output_buffers_[i].size);
+        }
+        return audio;
+    }
+
     // Push input data
     for (size_t i = 0; i < gf->channels_; i++) {
         deque_push_back(&gf->input_buffers_[i],
