@@ -45,12 +45,9 @@ jobs:
           # Inject plugin into OBS cmake
           Add-Content -Path "${{ github.workspace }}/obs-studio/CMakeLists.txt" -Value "`nadd_subdirectory(plugins/obs-vst3)" -Encoding ASCII
 
-      - name: Get VST3 SDK (full clone with submodules)
+      - name: Get VST3 SDK
         run: |
-          git clone --recursive https://github.com/steinbergmedia/vst3sdk.git "${{ github.workspace }}/vst3sdk"
-
-      - name: Get VST3 SDK (Windows)
-        run: |
+          Remove-Item -Recurse -Force "${{ github.workspace }}/vst3sdk" -ErrorAction SilentlyContinue
           git clone --recursive https://github.com/steinbergmedia/vst3sdk.git "${{ github.workspace }}/vst3sdk"
 
       - name: Configure CMake
