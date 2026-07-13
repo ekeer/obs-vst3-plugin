@@ -32,7 +32,7 @@
 #define FRAME_SIZE 480
 
 class VST3Plugin;
-struct VST3Graph;
+class VST3Graph;
 
 /* Audio packet info for dequeue */
 struct vst3_audio_info {
