@@ -279,6 +279,14 @@ bool VST3Plugin::init(const std::string &classId, const std::string &path_, int 
 		editController->setComponentHandler(componentContext->getComponentHandler());
 	}
 
+	// Connect IConnectionPoint between host and plugin for async messages
+	FUnknownPtr<IConnectionPoint> hostCP(hostContext->getFUnknown());
+	FUnknownPtr<IConnectionPoint> pluginCP(vstPlug);
+	if (hostCP && pluginCP) {
+		pluginCP->connect(hostCP);
+		hostCP->connect(pluginCP);
+	}
+
 	const int32 paramCount = editController ? editController->getParameterCount() : 0;
 	guiToDsp.setMaxParameters(paramCount > 0 ? paramCount : 256);
 	dspToGui.setMaxParameters(paramCount > 0 ? paramCount : 256);
