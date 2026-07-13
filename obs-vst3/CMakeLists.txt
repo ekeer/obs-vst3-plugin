@@ -12,7 +12,7 @@ project(obs-vst3 VERSION 1.0.0)
 find_package(Qt6 REQUIRED Widgets)
 set(CMAKE_AUTOMOC ON)
 
-add_library(obs-vst3 MODULE)
+add_library(obs-vst3 SHARED)
 add_library(OBS::vst3 ALIAS obs-vst3)
 
 # Add our cmake finder modules
